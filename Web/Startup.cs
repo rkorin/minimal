@@ -13,6 +13,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WebMinimal.Data;
 using WebMinimal.Models;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 namespace Web
 {
     public class Startup
@@ -79,7 +83,32 @@ namespace Web
 
             app.UseIdentity();
 
-            // Add external authentication middleware below. To configure them please see http://go.microsoft.com/fwlink/?LinkID=532715
+            const string secretKey = "mysupersecret_secretkey!123";
+            SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            SigningCredentials signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256); 
+            const string audience = "Audience";
+            const string issuer = "Issuer";
+            app.UseJwtBearerAuthentication(new JwtBearerOptions
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = signingKey,
+
+                    ValidateIssuer = false,
+                    ValidIssuer = issuer,
+
+                    ValidateAudience = true,
+                    ValidAudience = audience,
+
+                    ValidateLifetime = true,
+
+                    ClockSkew = TimeSpan.Zero,
+                    AuthenticationType = JwtBearerDefaults.AuthenticationScheme
+                }
+            });
 
             app.UseMvc(routes =>
             {
