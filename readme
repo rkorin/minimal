@@ -1,2 +1,10 @@
 # minimal
 minimal application
+
+I am working with this project...
+I want to make minimal application with working:
+- ASP.Net Core 1.0
+- Identity
+- Angular2/Typescript
+- Entity Framework
+- JWT Auth (angular2-jwt)
