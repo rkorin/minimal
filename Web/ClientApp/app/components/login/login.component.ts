@@ -40,11 +40,18 @@ export class LoginComponent {
         return Observable.throw(errMsg);
     }
 
+    protected buildOptions(): RequestOptions {
+        let headers = new Headers({ 'Content-Type': 'application/json' });
+        return new RequestOptions({ headers: headers });
+    }
+
+
     onSubmit() {
         debugger;
-        this.authHttp.post(this.baseUrl + 'Account/Login', {
-            Email: this.email, Password: this.pwd, RememberMe: true
-        }).subscribe(result => {
+        let options = this.buildOptions();
+        this.authHttp.post('/api/Account/Login', {
+            email: this.email, password: this.pwd, rememberMe: true
+        }, options).subscribe(result => {
             debugger;
         });
     }

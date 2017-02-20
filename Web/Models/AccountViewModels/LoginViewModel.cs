@@ -28,5 +28,6 @@ namespace WebMinimal.Models.AccountViewModels
         public bool NeedTwoFactor { get; set; }
         public string Token { get; set; }
         public bool IsLocked { get; internal set; }
+        public ApplicationUser User { get; internal set; }
     }
 }

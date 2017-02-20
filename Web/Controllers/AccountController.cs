@@ -45,13 +45,13 @@ namespace Web.Controllers
 
         [HttpPost("[action]")]
         [AllowAnonymous]
-        public async Task<LoginViewModelResponse> Login(string Email, string Password)
+        public async Task<LoginViewModelResponse> Login([FromBody] LoginViewModelRequest model)
         {
             try { await CheckSeed(); }
             catch (Exception ex) { }
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-            var result = await _signInManager.PasswordSignInAsync(Email, Password, true, lockoutOnFailure: false);
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, true, lockoutOnFailure: false);
             if (result.Succeeded)
             {
                 return new LoginViewModelResponse { Success = true };
@@ -113,9 +113,9 @@ namespace Web.Controllers
                     await _roleManager.CreateAsync(new IdentityRole { Name = "SuperUser" });
                     await _roleManager.CreateAsync(new IdentityRole { Name = "User" });
                 }
-                await _userManager.AddToRolesAsync(a, new string[] { "Admin", "SuperUser", "User" });
-                await _userManager.AddToRolesAsync(spu, new string[] { "SuperUser", "User" });
-                await _userManager.AddToRolesAsync(sa, new string[] { "Admin", "SuperAdmin", "SuperUser", "User" });
+                //await _userManager.AddToRolesAsync(a, new string[] { "Admin", "SuperUser", "User" });
+                //await _userManager.AddToRolesAsync(spu, new string[] { "SuperUser", "User" });
+                //await _userManager.AddToRolesAsync(sa, new string[] { "Admin", "SuperAdmin", "SuperUser", "User" });
             }
         }
     }
