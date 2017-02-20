@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Http } from '@angular/http';
+
+import { AuthHttp } from 'angular2-jwt';
 
 @Component({
     selector: 'fetchdata',
@@ -8,8 +9,8 @@ import { Http } from '@angular/http';
 export class FetchDataComponent {
     public forecasts: WeatherForecast[];
 
-    constructor(http: Http) {
-        http.get('/api/SampleData/WeatherForecasts').subscribe(result => {
+    constructor(public authHttp: AuthHttp) {
+        this.authHttp.get('/api/SampleData/WeatherForecasts').subscribe(result => {
             this.forecasts = result.json();
         });
     }

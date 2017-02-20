@@ -70,7 +70,8 @@ namespace Web
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions {
+                app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+                {
                     HotModuleReplacement = true
                 });
                 app.UseDatabaseErrorPage();
@@ -89,9 +90,9 @@ namespace Web
 
             const string secretKey = "mysupersecret_secretkey!123";
             SymmetricSecurityKey signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
-            SigningCredentials signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256); 
+            SigningCredentials signingCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
             const string audience = "Audience";
-            const string issuer = "Issuer";
+            const string issuer = "myClientId";
             app.UseJwtBearerAuthentication(new JwtBearerOptions
             {
                 AutomaticAuthenticate = true,
