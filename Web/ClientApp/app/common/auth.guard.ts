@@ -13,6 +13,7 @@ export class AuthGuard implements CanActivate {
 
     canActivate() {
         if (isBrowser) {
+            debugger;
             if (this.auth.loggedIn()) {
                 return true;
             } else {

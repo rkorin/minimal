@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthHttp } from 'angular2-jwt';
 import { Observable } from 'rxjs/Observable';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
@@ -7,16 +8,11 @@ import { Http, Response, Headers, RequestOptions } from '@angular/http';
     selector: 'login',
     template: require('./login.component.html')
 })
-export class LoginComponent {
-
-    public baseUrl = 'http://localhost:58172/api/';
-    public controller = 'auth';
-
-
+export class LoginComponent { 
     email: string;
     pwd: string;
 
-    constructor(protected authHttp: Http) {
+    constructor(protected authHttp: Http, private router: Router) {
     }
 
 
@@ -42,17 +38,22 @@ export class LoginComponent {
 
     protected buildOptions(): RequestOptions {
         let headers = new Headers({ 'Content-Type': 'application/json' });
-        return new RequestOptions({ headers: headers });
+        return new RequestOptions({
+            headers: headers            
+        });
     }
 
 
-    onSubmit() {
-        debugger;
+    onSubmit() { 
         let options = this.buildOptions();
-        this.authHttp.post('/api/Account/Login', {
+        this.authHttp.post('/token', {
             email: this.email, password: this.pwd, rememberMe: true
-        }, options).subscribe(result => {
-            debugger;
+        }, options).subscribe(result => {            
+            if (result && result["_body"]) {
+                var json = JSON.parse(result["_body"]); 
+                localStorage.setItem('id_token', json['access_token']);
+                this.router.navigate(['/']);
+            }
         });
     }
 }

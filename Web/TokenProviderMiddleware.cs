@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -46,13 +47,24 @@ namespace Web
 
             // Request must be POST with Content-Type: application/x-www-form-urlencoded
             if (!context.Request.Method.Equals("POST")
-               || !context.Request.HasFormContentType)
+               //|| !context.Request.Body.Length>0
+               )
             {
                 context.Response.StatusCode = 400;
                 return context.Response.WriteAsync("Bad request.");
             }
 
-            return GenerateToken(context);
+            string body = "";
+            using (var bodyReader = new StreamReader(context.Request.Body))
+            {
+                body = bodyReader.ReadToEnd();
+            }
+
+            LoginViewModelRequest req = JsonConvert.DeserializeObject<LoginViewModelRequest>(body);
+            if (body != null)
+                return GenerateToken(context, req);
+
+            return _next(context);
         }
 
         private async Task CheckSeed()
@@ -88,9 +100,9 @@ namespace Web
                     Level = 1,
                     JoinDate = DateTime.Now.AddYears(-3)
                 };
-                await _userManager.CreateAsync(spu, "123");
-                await _userManager.CreateAsync(sa, "123");
-                await _userManager.CreateAsync(a, "123");
+                var r1 = await _userManager.CreateAsync(spu, "Initial!1");
+                var r2 = await _userManager.CreateAsync(sa, "Initial!1");
+                var r3 = await _userManager.CreateAsync(a, "Initial!1");
 
                 if (_roleManager.Roles.Count() == 0)
                 {
@@ -99,42 +111,48 @@ namespace Web
                     await _roleManager.CreateAsync(new IdentityRole { Name = "SuperUser" });
                     await _roleManager.CreateAsync(new IdentityRole { Name = "User" });
                 }
-                //await _userManager.AddToRolesAsync(a, new string[] { "Admin", "SuperUser", "User" });
-                //await _userManager.AddToRolesAsync(spu, new string[] { "SuperUser", "User" });
-                //await _userManager.AddToRolesAsync(sa, new string[] { "Admin", "SuperAdmin", "SuperUser", "User" });
+                await _userManager.AddToRolesAsync(a, new string[] { "Admin", "SuperUser", "User" });
+                await _userManager.AddToRolesAsync(spu, new string[] { "SuperUser", "User" });
+                await _userManager.AddToRolesAsync(sa, new string[] { "Admin", "SuperAdmin", "SuperUser", "User" });
             }
         }
 
         public async Task<LoginViewModelResponse> Login(string Email, string Password)
         {
-            
+
             await CheckSeed();
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-            var result = await _signInManager.PasswordSignInAsync(Email, Password, true, lockoutOnFailure: false);
-            if (result.Succeeded)
+            var user = await _userManager.FindByEmailAsync(Email);
+            if (user != null)
             {
-                ApplicationUser au = await _userManager.FindByEmailAsync(Email);
-                return new LoginViewModelResponse { Success = false, User = au };
+                var result = await _signInManager.PasswordSignInAsync(user, Password, true,
+               lockoutOnFailure: false);
+                if (result.Succeeded)
+                {
+                    ApplicationUser au = await _userManager.FindByEmailAsync(Email);
+                    return new LoginViewModelResponse { Success = false, User = au };
+                }
+                if (result.RequiresTwoFactor)
+                {
+                    return new LoginViewModelResponse { Success = false, NeedTwoFactor = true };
+                }
+                if (result.IsLockedOut)
+                {
+                    return new LoginViewModelResponse { Success = false, IsLocked = true };
+                }
             }
-            if (result.RequiresTwoFactor)
-            {
-                return new LoginViewModelResponse { Success = false, NeedTwoFactor = true };
-            }
-            if (result.IsLockedOut)
-            {
-                return new LoginViewModelResponse { Success = false, IsLocked = true };
-            }
-            else
-            {
-                return new LoginViewModelResponse { Success = false, message = "Invalid login attempt." };
-            }
+
+            return new LoginViewModelResponse { Success = false, message = "Invalid login attempt." };
+
         }
 
-        private async Task GenerateToken(HttpContext context)
+        private async Task GenerateToken(HttpContext context,
+            LoginViewModelRequest req)
         {
-            var username = context.Request.Form["email"];
-            var password = context.Request.Form["password"];
+
+            var username = req.Email;
+            var password = req.Password;
 
             var result_user = await Login(username, password);
             if (result_user == null || result_user.User == null)

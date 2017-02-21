@@ -7,8 +7,8 @@ import {AuthService} from './auth.service'
 
 function authHttpServiceFactory(http: Http, options: RequestOptions) {
     return new AuthHttp(new AuthConfig({
-        tokenName: 'jwt_token',
-        tokenGetter: (() => sessionStorage.getItem('jwt_token')),
+        tokenName: 'id_token', 
+        tokenGetter: (() => localStorage.getItem('id_token')),
         globalHeaders: [{ 'Content-Type': 'application/json' }],
     }), http, options);
 }
