@@ -4,13 +4,11 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using WebMinimal.Models;
+using WebMinimal.Data;
 using WebMinimal.Models.AccountViewModels;
 
 namespace Web
@@ -67,60 +65,8 @@ namespace Web
             return _next(context);
         }
 
-        private async Task CheckSeed()
-        {
-            if (await _userManager.FindByEmailAsync("rkorinSuperPowerUser@gmail.com") == null)
-            {
-                var spu = new ApplicationUser()
-                {
-                    UserName = "SuperPowerUser",
-                    Email = "rkorinSuperPowerUser@gmail.com",
-                    EmailConfirmed = true,
-                    FirstName = "Roman",
-                    LastName = "Korin",
-                    Level = 1,
-                    JoinDate = DateTime.Now.AddYears(-3)
-                };
-                var sa = new ApplicationUser()
-                {
-                    UserName = "SuperAdmin",
-                    Email = "rkorinSuperAdmin@gmail.com",
-                    EmailConfirmed = true,
-                    FirstName = "Roman",
-                    LastName = "Korin",
-                    Level = 1,
-                    JoinDate = DateTime.Now.AddYears(-3)
-                }; var a = new ApplicationUser()
-                {
-                    UserName = "Admin",
-                    Email = "rkorinAdmin@gmail.com",
-                    EmailConfirmed = true,
-                    FirstName = "Roman",
-                    LastName = "Korin",
-                    Level = 1,
-                    JoinDate = DateTime.Now.AddYears(-3)
-                };
-                var r1 = await _userManager.CreateAsync(spu, "Initial!1");
-                var r2 = await _userManager.CreateAsync(sa, "Initial!1");
-                var r3 = await _userManager.CreateAsync(a, "Initial!1");
-
-                if (_roleManager.Roles.Count() == 0)
-                {
-                    await _roleManager.CreateAsync(new IdentityRole { Name = "SuperAdmin" });
-                    await _roleManager.CreateAsync(new IdentityRole { Name = "Admin" });
-                    await _roleManager.CreateAsync(new IdentityRole { Name = "SuperUser" });
-                    await _roleManager.CreateAsync(new IdentityRole { Name = "User" });
-                }
-                await _userManager.AddToRolesAsync(a, new string[] { "Admin", "SuperUser", "User" });
-                await _userManager.AddToRolesAsync(spu, new string[] { "SuperUser", "User" });
-                await _userManager.AddToRolesAsync(sa, new string[] { "Admin", "SuperAdmin", "SuperUser", "User" });
-            }
-        }
-
         public async Task<LoginViewModelResponse> Login(string Email, string Password)
         {
-
-            await CheckSeed();
             // This doesn't count login failures towards account lockout
             // To enable password failures to trigger account lockout, set lockoutOnFailure: true
             var user = await _userManager.FindByEmailAsync(Email);
@@ -171,7 +117,8 @@ namespace Web
             {
                 new Claim(JwtRegisteredClaimNames.Sub, username),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, dto.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
+                new Claim(JwtRegisteredClaimNames.Iat, dto.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new Claim(JwtRegisteredClaimNames.Email, result_user.User.Email, ClaimValueTypes.Integer64)
             };
 
             // Create the JWT and write it to a string

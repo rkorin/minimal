@@ -17,6 +17,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Web.Data;
 
 namespace Web
 {
@@ -146,6 +147,8 @@ namespace Web
             };
 
             app.UseMiddleware<TokenProviderMiddleware>(Options.Create(options));
+
+            SeedDefaults.Initialize(app.ApplicationServices).Wait();
 
             app.UseMvc(routes =>
             {

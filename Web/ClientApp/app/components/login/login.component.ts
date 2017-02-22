@@ -4,15 +4,19 @@ import { AuthHttp } from 'angular2-jwt';
 import { Observable } from 'rxjs/Observable';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 
+import {AuthService} from '../../common';
+
 @Component({
     selector: 'login',
     template: require('./login.component.html')
 })
-export class LoginComponent { 
+export class LoginComponent {
     email: string;
     pwd: string;
 
-    constructor(protected authHttp: Http, private router: Router) {
+    constructor(protected authHttp: Http,
+        private router: Router,
+        protected authContext: AuthService) {
     }
 
 
@@ -39,20 +43,22 @@ export class LoginComponent {
     protected buildOptions(): RequestOptions {
         let headers = new Headers({ 'Content-Type': 'application/json' });
         return new RequestOptions({
-            headers: headers            
+            headers: headers
         });
     }
 
 
-    onSubmit() { 
+    onSubmit() {
+        this.authContext.clear();
         let options = this.buildOptions();
         this.authHttp.post('/token', {
             email: this.email, password: this.pwd, rememberMe: true
-        }, options).subscribe(result => {            
+        }, options).subscribe(result => {
             if (result && result["_body"]) {
-                var json = JSON.parse(result["_body"]); 
+                var json = JSON.parse(result["_body"]);
                 localStorage.setItem('id_token', json['access_token']);
                 this.router.navigate(['/']);
+                this.authContext.update(this.email, this.pwd, json);
             }
         });
     }

@@ -3,10 +3,9 @@ import { RouterModule } from '@angular/router';
 import { UniversalModule } from 'angular2-universal';
 import { AppComponent } from './components/app/app.component'
 import { NavMenuComponent } from './components/navmenu/navmenu.component';
-import { HomeComponent } from './components/home/home.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { LoginComponent } from './components/login/login.component';
 import { FetchDataComponent } from './components/fetchdata/fetchdata.component';
-import { CounterComponent } from './components/counter/counter.component';
 
 import { AuthModule, AuthService, AuthGuard } from './common';
 import { CommonModule }  from '@angular/common';
@@ -17,9 +16,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     declarations: [
         AppComponent,
         NavMenuComponent,
-        CounterComponent,
         FetchDataComponent,
-        HomeComponent,
+        DashboardComponent,
         LoginComponent
     ],
     imports: [
@@ -28,11 +26,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
         AuthModule,
         RouterModule.forRoot([
             { path: '', redirectTo: 'home', pathMatch: 'full', canActivate: [AuthGuard] },
-            { path: 'home', component: HomeComponent, canActivate: [AuthGuard] },
-            { path: 'counter', component: CounterComponent, canActivate: [AuthGuard] },
-            { path: 'fetch-data', component: FetchDataComponent, canActivate: [AuthGuard] },
+            { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
             { path: 'login', component: LoginComponent },
-            { path: '**', redirectTo: 'home' }
+            { path: '**', redirectTo: 'dashboard' }
         ])
     ]
 })

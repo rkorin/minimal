@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using WebMinimal.Models;
 using WebMinimal.Models.AccountViewModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using WebMinimal.Data;
 
 namespace Web.Controllers
 {
@@ -21,6 +22,14 @@ namespace Web.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
 
         public bool Success { get; private set; }
+
+        public UserManager<ApplicationUser> UserManager
+        {
+            get
+            {
+                return _userManager;
+            }
+        }
 
         //private readonly IEmailSender _emailSender;
         //private readonly ISmsSender _smsSender;
@@ -71,7 +80,7 @@ namespace Web.Controllers
         }
         private async Task CheckSeed()
         {
-            if (await _userManager.FindByNameAsync("SuperPowerUser") == null)
+            if (await UserManager.FindByNameAsync("SuperPowerUser") == null)
             {
                 var spu = new ApplicationUser()
                 {
@@ -102,9 +111,9 @@ namespace Web.Controllers
                     Level = 1,
                     JoinDate = DateTime.Now.AddYears(-3)
                 };
-                await _userManager.CreateAsync(spu, "123");                
-                await _userManager.CreateAsync(sa, "123");
-                await _userManager.CreateAsync(a, "123");
+                await UserManager.CreateAsync(spu, "123");                
+                await UserManager.CreateAsync(sa, "123");
+                await UserManager.CreateAsync(a, "123");
 
                 if (_roleManager.Roles.Count() == 0)
                 {

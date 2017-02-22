@@ -6,7 +6,25 @@ import { isBrowser } from 'angular2-universal';
 
 @Injectable()
 export class AuthService {
-    loggedIn() { 
+    loggedIn() {
         return tokenNotExpired();
+    }
+
+    private login: string;
+    private passwd: string;
+    private Roles: any;
+    private Claims: any;
+
+    public clear() {
+        this.login = '';
+        this.passwd = '';
+    }
+
+    public update(eml: string,
+        pwd: string,
+        result: any) {
+        debugger;
+        this.login = eml;
+        this.passwd = pwd;
     }
 }
