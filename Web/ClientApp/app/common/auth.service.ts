@@ -7,24 +7,65 @@ import { isBrowser } from 'angular2-universal';
 @Injectable()
 export class AuthService {
     loggedIn() {
+        if (!this.Roles || !this.Claims) {
+            let token = localStorage.getItem('id_token'),
+                jwtHelper: JwtHelper = new JwtHelper(),
+                dtoken = jwtHelper.decodeToken(token);
+            this.update_token_info(dtoken);
+        }
         return tokenNotExpired();
     }
 
     private login: string;
     private passwd: string;
-    private Roles: any;
-    private Claims: any;
+    public Roles: any = null;
+    public Claims: any = null;
 
     public clear() {
         this.login = '';
         this.passwd = '';
     }
 
-    public update(eml: string,
-        pwd: string,
-        result: any) {
-        debugger;
+    protected update_token_info(result: any) {
+        this.Claims = {};
+        this.Roles = {};
+        result = result || {};
+        for (var n in result || {}) {
+            if (result.hasOwnProperty(n)) {
+                let name: string = n.toString().toLowerCase();
+                if (name.length > 4 && name.substring(0, 4) == 'sec_') {
+                    let prefix = name.substring(0, 4);
+                    let body = name.substring(4);
+                    this.Claims[body] = this.parse_claims(result[n]);
+                }
+                if (name == 'role_list')
+                    this.parse_roles(result[n]);
+            }
+        }
+    }
+
+    public update(eml: string, pwd: string, result: any) {
         this.login = eml;
         this.passwd = pwd;
+        this.update_token_info(result);
+    }
+
+    public parse_roles(v: string): any {
+        v = v || '';
+        let roles = v.split(',');
+        for (var i = 0; i < roles.length; ++i) {
+            if (roles[i])
+                this.Roles[roles[i]] = true;
+        }
+    }
+
+    public parse_claims(v: string): any {
+        if (v == '*')
+            return { c: true, r: true, u: true, d: true, a: true };
+        let result = {};
+        for (var i = 0; i < v.length; ++i) {
+            result[v[i]] = true;
+        }
+        return result;
     }
 }

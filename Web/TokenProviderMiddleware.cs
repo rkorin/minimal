@@ -74,8 +74,7 @@ namespace Web
             var user = await _userManager.FindByEmailAsync(Email);
             if (user != null)
             {
-                var result = await _signInManager.PasswordSignInAsync(user, Password, true,
-               lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(user, Password, true, lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
                     return new LoginViewModelResponse
@@ -102,23 +101,40 @@ namespace Web
         private async Task<Dictionary<string, string>> getAllClaims(ApplicationUser user)
         {
             Dictionary<string, string> dclaims = new Dictionary<string, string>();
-            var claims = await _userManager.GetClaimsAsync(user);
-            foreach (var c in claims)
-                dclaims["sec_" + c.Type] = c.Value;
-
             var roles = await _userManager.GetRolesAsync(user);
+            dclaims["role_list"] = string.Join(",", roles);
+            merge_claims(await _userManager.GetClaimsAsync(user), dclaims);
             foreach (var role in roles)
-            {
-                var Role = await _roleManager.FindByNameAsync(role);
-                claims = await _roleManager.GetClaimsAsync(Role);
-                foreach (var c in claims)
-                    dclaims["sec_" + c.Type] = c.Value;
-            }
+                merge_claims(await _roleManager.GetClaimsAsync(
+                    await _roleManager.FindByNameAsync(role)), dclaims);
             return dclaims;
         }
 
-        private async Task GenerateToken(HttpContext context,
-            LoginViewModelRequest req)
+        private void merge_claims(IEnumerable<Claim> claims, Dictionary<string, string> dclaims)
+        {
+            foreach (var c in claims)
+            {
+                if (dclaims.ContainsKey("sec_" + c.Type))
+                {
+                    dclaims["sec_" + c.Type] = merge(dclaims["sec_" + c.Type], c.Value);
+                }
+                else
+                {
+                    dclaims["sec_" + c.Type] = c.Value;
+                }
+            }
+        }
+
+        private string merge(string v1, string v2)
+        {
+            if (v1 == "*" || v2 == "*") return "*";
+            Dictionary<char, char> chars = new Dictionary<char, char>();
+            v1?.ToCharArray()?.ToList()?.ForEach(fe => chars[fe] = fe);
+            v2?.ToCharArray()?.ToList()?.ForEach(fe => chars[fe] = fe);
+            return string.Join("", chars);
+        }
+
+        private async Task GenerateToken(HttpContext context, LoginViewModelRequest req)
         {
 
             var username = req.Email;
@@ -143,14 +159,14 @@ namespace Web
             {
                 all_claims[c.Key] = new Claim(c.Key, c.Value);
             }
-            all_claims[JwtRegisteredClaimNames.Sub] = 
+            all_claims[JwtRegisteredClaimNames.Sub] =
                 new Claim(JwtRegisteredClaimNames.Sub, username);
-            all_claims[JwtRegisteredClaimNames.Jti] = 
+            all_claims[JwtRegisteredClaimNames.Jti] =
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString());
-            all_claims[JwtRegisteredClaimNames.Iat] = 
+            all_claims[JwtRegisteredClaimNames.Iat] =
                 new Claim(JwtRegisteredClaimNames.Iat, dto.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64);
             all_claims[JwtRegisteredClaimNames.Email] =
-                new Claim(JwtRegisteredClaimNames.Email, result_user.User.Email); 
+                new Claim(JwtRegisteredClaimNames.Email, result_user.User.Email);
 
             // Create the JWT and write it to a string
             var jwt = new JwtSecurityToken(

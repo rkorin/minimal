@@ -12,11 +12,39 @@
         <div class='clearfix'></div>
         <div class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
-                <li [routerLinkActive]="['link-active']">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('dashbrd','r')">
                     <a [routerLink]="['/dashboard']">
                         <span class='glyphicon glyphicon-home'></span> Dashboard
                     </a>
-                </li>                 
+                </li>
+                <li [routerLinkActive]="['link-active']" *ngIf="role('User')">
+                    <a [routerLink]="['/pages/normal']">
+                        <span class='glyphicon glyphicon-home'></span> Normal Page
+                    </a>
+                </li>
+                <li [routerLinkActive]="['link-active']" *ngIf="role('PowerUser')">
+                    <a [routerLink]="['/pages/power']">
+                        <span class='glyphicon glyphicon-home'></span> Power Page
+                    </a>
+                </li>
+                <li [routerLinkActive]="['link-active']" *ngIf="role('Admin')">
+                    <a [routerLink]="['/pages/admin']">
+                        <span class='glyphicon glyphicon-home'></span> Admin Page
+                    </a>
+                </li>
+                <li>
+                    <span>--------------------------</span>
+                </li>
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('acc','r')">
+                    <a [routerLink]="['/accounts']">
+                        <span class='glyphicon glyphicon-home'></span> Accounts
+                    </a>
+                </li>
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('role','r')">
+                    <a [routerLink]="['/roles']">
+                        <span class='glyphicon glyphicon-home'></span> Roles
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

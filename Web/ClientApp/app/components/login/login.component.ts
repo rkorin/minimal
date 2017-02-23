@@ -55,14 +55,13 @@ export class LoginComponent {
         let options = this.buildOptions();
         this.authHttp.post('/token', {
             email: this.email, password: this.pwd, rememberMe: true
-        }, options).subscribe(result => {
+        }, options).subscribe(result => { 
             if (result && result["_body"]) {
-                debugger;
                 var json = JSON.parse(result["_body"]);
                 localStorage.setItem('id_token', json['access_token']);
                 var dtoken = this.jwtHelper.decodeToken(json['access_token'])
+                this.authContext.update(this.email, this.pwd, dtoken);
                 this.router.navigate(['/']);
-                this.authContext.update(this.email, this.pwd, json);
             }
         });
     }
