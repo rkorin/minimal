@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthHttp } from 'angular2-jwt';
+import { JwtHelper } from 'angular2-jwt';
 import { Observable } from 'rxjs/Observable';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 
@@ -13,6 +14,7 @@ import {AuthService} from '../../common';
 export class LoginComponent {
     email: string;
     pwd: string;
+    jwtHelper: JwtHelper = new JwtHelper();
 
     constructor(protected authHttp: Http,
         private router: Router,
@@ -55,8 +57,10 @@ export class LoginComponent {
             email: this.email, password: this.pwd, rememberMe: true
         }, options).subscribe(result => {
             if (result && result["_body"]) {
+                debugger;
                 var json = JSON.parse(result["_body"]);
                 localStorage.setItem('id_token', json['access_token']);
+                var dtoken = this.jwtHelper.decodeToken(json['access_token'])
                 this.router.navigate(['/']);
                 this.authContext.update(this.email, this.pwd, json);
             }

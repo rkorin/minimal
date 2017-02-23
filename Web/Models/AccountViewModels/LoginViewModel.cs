@@ -30,5 +30,6 @@ namespace WebMinimal.Models.AccountViewModels
         public string Token { get; set; }
         public bool IsLocked { get; internal set; }
         public ApplicationUser User { get; internal set; }
+        public Dictionary<string, string> Claims { get; internal set; }
     }
 }

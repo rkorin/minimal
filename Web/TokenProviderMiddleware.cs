@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
+using System.Linq;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Security.Claims;
@@ -76,8 +78,12 @@ namespace Web
                lockoutOnFailure: false);
                 if (result.Succeeded)
                 {
-                    ApplicationUser au = await _userManager.FindByEmailAsync(Email);
-                    return new LoginViewModelResponse { Success = false, User = au };
+                    return new LoginViewModelResponse
+                    {
+                        Success = false,
+                        User = user,
+                        Claims = await getAllClaims(user)
+                    };
                 }
                 if (result.RequiresTwoFactor)
                 {
@@ -91,6 +97,24 @@ namespace Web
 
             return new LoginViewModelResponse { Success = false, message = "Invalid login attempt." };
 
+        }
+
+        private async Task<Dictionary<string, string>> getAllClaims(ApplicationUser user)
+        {
+            Dictionary<string, string> dclaims = new Dictionary<string, string>();
+            var claims = await _userManager.GetClaimsAsync(user);
+            foreach (var c in claims)
+                dclaims["sec_" + c.Type] = c.Value;
+
+            var roles = await _userManager.GetRolesAsync(user);
+            foreach (var role in roles)
+            {
+                var Role = await _roleManager.FindByNameAsync(role);
+                claims = await _roleManager.GetClaimsAsync(Role);
+                foreach (var c in claims)
+                    dclaims["sec_" + c.Type] = c.Value;
+            }
+            return dclaims;
         }
 
         private async Task GenerateToken(HttpContext context,
@@ -113,19 +137,26 @@ namespace Web
 
             // Specifically add the jti (random nonce), iat (issued timestamp), and sub (subject/user) claims.
             // You can add other claims here, if you want:
-            var claims = new Claim[]
+
+            Dictionary<string, Claim> all_claims = new Dictionary<string, Claim>();
+            foreach (var c in result_user?.Claims ?? new Dictionary<string, string>())
             {
-                new Claim(JwtRegisteredClaimNames.Sub, username),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(JwtRegisteredClaimNames.Iat, dto.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
-                new Claim(JwtRegisteredClaimNames.Email, result_user.User.Email, ClaimValueTypes.Integer64)
-            };
+                all_claims[c.Key] = new Claim(c.Key, c.Value);
+            }
+            all_claims[JwtRegisteredClaimNames.Sub] = 
+                new Claim(JwtRegisteredClaimNames.Sub, username);
+            all_claims[JwtRegisteredClaimNames.Jti] = 
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString());
+            all_claims[JwtRegisteredClaimNames.Iat] = 
+                new Claim(JwtRegisteredClaimNames.Iat, dto.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64);
+            all_claims[JwtRegisteredClaimNames.Email] =
+                new Claim(JwtRegisteredClaimNames.Email, result_user.User.Email); 
 
             // Create the JWT and write it to a string
             var jwt = new JwtSecurityToken(
                 issuer: _options.Issuer,
                 audience: _options.Audience,
-                claims: claims,
+                claims: all_claims.Values.ToArray(),
                 notBefore: now,
                 expires: now.Add(_options.Expiration),
                 signingCredentials: _options.SigningCredentials);

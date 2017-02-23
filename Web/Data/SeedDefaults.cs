@@ -44,17 +44,18 @@ namespace Web.Data
                 var user = await userManager.FindByEmailAsync(userName + "Demo@gmail.com");
                 if (user == null)
                 {
+                    var un = userName + Guid.NewGuid().ToString();
                     user = new ApplicationUser()
                     {
-                        UserName = userName,
+                        UserName = un,
                         Email = userName + "Demo@gmail.com",
                         EmailConfirmed = true,
-                        FirstName = userName,
+                        FirstName = un,
                         LastName = "DEMO",
                         Level = 1,
                         JoinDate = DateTime.Now.AddYears(-3)
                     };
-                    await userManager.CreateAsync(user, InitialPassword);
+                    var res = await userManager.CreateAsync(user, InitialPassword);
                     RolesMap
                         .Where(map => map.Key.ToString() == userName)
                         .ToList()
@@ -89,10 +90,10 @@ namespace Web.Data
             var claims = await roleManager.GetClaimsAsync(adminRole);
             Claims.Where(w => !claims.Any(a => a.Type == w))
                 .ToList()
-                .ForEach(async (fe) => await roleManager.AddClaimAsync(adminRole, new Claim(fe, claimValue)));
+                .ForEach((fe) => roleManager.AddClaimAsync(adminRole, new Claim(fe, claimValue)).Wait());
             claims.Where(w => !Claims.Any(a => a == w.Type))
                 .ToList()
-                .ForEach(async (fe) => await roleManager.RemoveClaimAsync(adminRole, fe));
+                .ForEach((fe) => roleManager.RemoveClaimAsync(adminRole, fe).Wait());
         }
     }
 }
