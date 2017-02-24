@@ -59,6 +59,21 @@ namespace Web.Data
             }
         };
 
+
+        internal static void AddPolicies(IServiceCollection services)
+        {
+            services.AddAuthorization(options =>
+            {
+                var ppages_obj = pget(InitialStructure, "Pages");
+                foreach (var PageName in pgets(ppages_obj))
+                {
+                    options.AddPolicy(PageName, policy => policy.RequireClaim(PageName));
+                    options.AddPolicy(PageName + "-Full", policy => policy.RequireClaim(PageName, "full"));
+                    options.AddPolicy(PageName + "-ReadOnly", policy => policy.RequireClaim(PageName, "ro", "full"));
+                }
+            });
+        }
+
         public static async Task Initialize(IServiceProvider serviceProvider)
         {
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
@@ -69,6 +84,7 @@ namespace Web.Data
             await AddDefaultRoles(serviceProvider, InitialStructure);
             await AddDefaultUsers(serviceProvider, InitialStructure);
         }
+
 
         private static async Task AddDefaultUsers(IServiceProvider serviceProvider, object Inititial)
         {
