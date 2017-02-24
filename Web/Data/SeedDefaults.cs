@@ -24,6 +24,48 @@ namespace Web.Data
             Admin
         }
 
+        public static object InitialStructure = new
+        {
+            Users = new { Admin = "Initial1!", PowerUser = "Initial1!", User = "Initial1!" },
+            Roles = new { Admin = "Admin", PowerUser = "Admin, PowerUser", User = "Admin, PowerUser, User" },
+            Pages = new
+            {
+                Accounts = new
+                {
+                    Admin = "*",
+                    PowerUser = "r"
+                },
+                Roles = new
+                {
+                    Admin = "*",
+                    PowerUser = "r"
+                },
+                Dashboard = new
+                {
+                    Admin = "*",
+                    PowerUser = "*",
+                    User = "r"
+                },
+                PageNormal = new
+                {
+                    Admin = "*",
+                    PowerUser = "*",
+                    User = "*"
+                },
+                PagePower = new
+                {
+                    Admin = "*",
+                    PowerUser = "*",
+                    User = "r"
+                },
+                PageAdmin = new
+                {
+                    Admin = "*",
+                    PowerUser = "r"
+                }
+            }
+        };
+
         public const string InitialPassword = "Initial1!";
         static Dictionary<IdentityUserEnum, IdentityRoleEnum[]> RolesMap = new Dictionary<IdentityUserEnum, IdentityRoleEnum[]>
         {

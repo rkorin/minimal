@@ -58,6 +58,13 @@ namespace Web
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("acc", policy => policy.RequireClaim("acc"));
+                options.AddPolicy("role", policy => policy.RequireClaim("role"));
+                options.AddPolicy("dashbrd", policy => policy.RequireClaim("dashbrd"));
+            });
+
             services.AddMvc();
         }
 
