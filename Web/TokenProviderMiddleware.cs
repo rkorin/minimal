@@ -102,11 +102,12 @@ namespace Web
         {
             Dictionary<string, string> dclaims = new Dictionary<string, string>();
             var roles = await _userManager.GetRolesAsync(user);
-            dclaims["role_list"] = string.Join(",", roles);
             merge_claims(await _userManager.GetClaimsAsync(user), dclaims);
             foreach (var role in roles)
                 merge_claims(await _roleManager.GetClaimsAsync(
-                    await _roleManager.FindByNameAsync(role)), dclaims);
+                   await _roleManager.FindByNameAsync(role)), dclaims);
+            
+            dclaims["role_list"] = string.Join(",", roles);
             return dclaims;
         }
 
@@ -114,24 +115,22 @@ namespace Web
         {
             foreach (var c in claims)
             {
-                if (dclaims.ContainsKey("sec_" + c.Type))
+                if (dclaims.ContainsKey("sec_" + c.Type.ToLower()))
                 {
-                    dclaims["sec_" + c.Type] = merge(dclaims["sec_" + c.Type], c.Value);
+                    dclaims["sec_" + c.Type.ToLower()] = merge(dclaims["sec_" + c.Type.ToLower()], c.Value);
                 }
                 else
                 {
-                    dclaims["sec_" + c.Type] = c.Value;
+                    dclaims["sec_" + c.Type.ToLower()] = c.Value;
                 }
             }
         }
 
         private string merge(string v1, string v2)
         {
-            if (v1 == "*" || v2 == "*") return "*";
-            Dictionary<char, char> chars = new Dictionary<char, char>();
-            v1?.ToCharArray()?.ToList()?.ForEach(fe => chars[fe] = fe);
-            v2?.ToCharArray()?.ToList()?.ForEach(fe => chars[fe] = fe);
-            return string.Join("", chars);
+            if (v1 == "full" || v2 == "full") return "full";
+            if (v1 == "ro" || v2 == "ro") return "ro";
+            return v1;
         }
 
         private async Task GenerateToken(HttpContext context, LoginViewModelRequest req)

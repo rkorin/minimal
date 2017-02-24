@@ -17,10 +17,10 @@ export class NavMenuComponent {
             return this.auth.Roles[name];
         return false;
     }
-    public claim(name: string, value: string): boolean { 
+    public claim(name: string): boolean { 
         if (this.auth && this.auth.Claims)
             if (this.auth.Claims[name])
-                return this.auth.Claims[name][value];
+                return true;
         return false;
     }
 }

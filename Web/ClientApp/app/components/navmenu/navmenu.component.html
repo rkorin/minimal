@@ -12,35 +12,35 @@
         <div class='clearfix'></div>
         <div class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
-                <li [routerLinkActive]="['link-active']" *ngIf="claim('dashbrd','r')">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('dashboard')">
                     <a [routerLink]="['/dashboard']">
                         <span class='glyphicon glyphicon-home'></span> Dashboard
                     </a>
                 </li>
-                <li [routerLinkActive]="['link-active']" *ngIf="role('User')">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('pagenormal')">
                     <a [routerLink]="['/pages/normal']">
                         <span class='glyphicon glyphicon-home'></span> Normal Page
                     </a>
                 </li>
-                <li [routerLinkActive]="['link-active']" *ngIf="role('PowerUser')">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('pagepower')">
                     <a [routerLink]="['/pages/power']">
                         <span class='glyphicon glyphicon-home'></span> Power Page
                     </a>
                 </li>
-                <li [routerLinkActive]="['link-active']" *ngIf="role('Admin')">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('pageadmin')">
                     <a [routerLink]="['/pages/admin']">
                         <span class='glyphicon glyphicon-home'></span> Admin Page
                     </a>
                 </li>
-                <li>
+                <li *ngIf="claim('accounts') || claim('roles')">
                     <span>--------------------------</span>
                 </li>
-                <li [routerLinkActive]="['link-active']" *ngIf="claim('acc','r')">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('accounts')">
                     <a [routerLink]="['/accounts']">
                         <span class='glyphicon glyphicon-home'></span> Accounts
                     </a>
                 </li>
-                <li [routerLinkActive]="['link-active']" *ngIf="claim('role','r')">
+                <li [routerLinkActive]="['link-active']" *ngIf="claim('roles')">
                     <a [routerLink]="['/roles']">
                         <span class='glyphicon glyphicon-home'></span> Roles
                     </a>

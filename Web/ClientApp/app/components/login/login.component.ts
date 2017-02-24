@@ -56,6 +56,7 @@ export class LoginComponent {
         this.authHttp.post('/token', {
             email: this.email, password: this.pwd, rememberMe: true
         }, options).subscribe(result => { 
+            debugger;
             if (result && result["_body"]) {
                 var json = JSON.parse(result["_body"]);
                 localStorage.setItem('id_token', json['access_token']);

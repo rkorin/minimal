@@ -60,12 +60,8 @@ export class AuthService {
     }
 
     public parse_claims(v: string): any {
-        if (v == '*')
-            return { c: true, r: true, u: true, d: true, a: true };
-        let result = {};
-        for (var i = 0; i < v.length; ++i) {
-            result[v[i]] = true;
-        }
-        return result;
+        var t = {};
+        t[v] = true;
+        return t;
     }
 }
